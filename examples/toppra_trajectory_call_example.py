@@ -57,6 +57,10 @@ class RequestTrajectory():
         request.waypoints.joint_names = ["x", "y", "z", "yaw"]
         # Set up sampling frequency of output trajectory.
         request.sampling_frequency = 100.0
+        # Set up number of gridpoints. The more gridpoints there are, 
+        # trajectory interpolation will be more accurate but slower.
+        # Defaults to 100
+        request.n_gridpoints = 500
         # If you want to plot Maximum Velocity Curve and accelerations you can
         # send True in this field. This is intended to be used only when you
         # have to debug something since it will block the service until plot

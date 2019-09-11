@@ -72,7 +72,11 @@ class ToppraTrajectory():
             alim, discretization_scheme=constraint.DiscretizationType.Interpolation)
 
         # Setup a parametrization instance
-        instance = algo.TOPPRA([pc_vel, pc_acc], path, solver_wrapper='seidel')
+        if (req.n_gridpoints <= 0):
+            gridpoints = np.linspace(0, path.duration, 100)
+        else:
+            gridpoints = np.linspace(0, path.duration, req.n_gridpoints)
+        instance = algo.TOPPRA([pc_vel, pc_acc], path, gridpoints=gridpoints, solver_wrapper='seidel')
 
         # Retime the trajectory, only this step is necessary.
         t0 = time.time()

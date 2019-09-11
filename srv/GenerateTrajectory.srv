@@ -1,5 +1,6 @@
 trajectory_msgs/JointTrajectory     waypoints
 float64                             sampling_frequency
+int32                               n_gridpoints
 bool                                plot
 ---
 trajectory_msgs/JointTrajectory     trajectory
