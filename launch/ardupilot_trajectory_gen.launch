@@ -1,0 +1,19 @@
+<launch>
+    <arg name="namespace" default="red"/>
+    <arg name="input_pose" default="topp/input/pose"/>
+    <arg name="output_point" default="position_hold/trajectory"/>
+    <arg name="odom" default="msf_core/odometry"/>
+
+    <!-- Trajectory generation -->
+    <node name="trajectory_gen" pkg="topp_ros" type="generate_toppra_trajectory.py" 
+        output="screen" ns="$(arg namespace)"/>
+
+    <!-- Trajectory point publisher -->
+    <node name="trajectory_publisher" pkg="topp_ros" type="traj_point_publisher.py" 
+        output="screen" ns="$(arg namespace)">
+        <remap from="input/pose" to="$(arg input_pose)"/>
+        <remap from="output/point" to="$(arg output_point)"/>
+        <remap from="odometry" to="$(arg odom)"/>
+    </node>
+
+</launch>
