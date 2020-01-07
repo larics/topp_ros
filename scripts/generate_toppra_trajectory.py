@@ -7,6 +7,7 @@ import toppra.algorithm as algo
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import copy
 
 # Ros imports
 import rospy
@@ -120,6 +121,8 @@ class ToppraTrajectory():
         # Convert to JointTrajectory message
         res.trajectory = self.TOPPRA2JointTrajectory(jnt_traj, req.sampling_frequency)
         res.success = True
+        if len(req.waypoints.joint_names) != 0:
+            res.trajectory.joint_names = copy.deepcopy(req.waypoints.joint_names)
         self.raw_trajectory_pub.publish(res.trajectory)
         self.raw_waypoints_pub.publish(req.waypoints)
         print "Time elapsed: ", time.time()-tstart
@@ -160,6 +163,9 @@ class ToppraTrajectory():
             last_point.accelerations.append(0.0)
         last_point.time_from_start = rospy.Duration.from_sec((n)/f)
         joint_trajectory.points.append(last_point)
+
+        for i in range(0, dof):
+            joint_trajectory.joint_names.append("joint"+str(i+1))
 
         return joint_trajectory
 
