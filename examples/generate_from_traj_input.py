@@ -55,7 +55,7 @@ class TrajectoryPointPublisher:
                 point.transforms[0].rotation.w])[2])
         
         for x_,y_,z_,yaw_ in zip(x, y, z, yaw):
-            print("Recieved point [{}, {}, {}, {}]", x_, y_, z_, yaw_)
+            print("Recieved point: ", x_, y_, z_, yaw_)
         
         request = GenerateTrajectoryRequest()
         
@@ -68,8 +68,8 @@ class TrajectoryPointPublisher:
             # constraints are added only on the first waypoint since the
             # TOPP-RA reads them only from there.
             if i==0:
-                waypoint.velocities = [1, 1, 1, 0.5]
-                waypoint.accelerations = [0.25, 0.25, 0.25, 0.125]
+                waypoint.velocities = [1, 1, 1, 1] 
+                waypoint.accelerations = [0.25, 0.25, 0.5, 0.125]
 
             # Append all waypoints in request
             request.waypoints.points.append(copy.deepcopy(waypoint))
@@ -108,7 +108,12 @@ class TrajectoryPointPublisher:
             temp_transform.translation.x = joint_trajectory.points[i].positions[0]
             temp_transform.translation.y = joint_trajectory.points[i].positions[1]
             temp_transform.translation.z = joint_trajectory.points[i].positions[2]
-            temp_transform.rotation.w = 1.0
+
+            quaternion = tf.transformations.quaternion_from_euler(0, 0, joint_trajectory.points[i].positions[3])
+            temp_transform.rotation.x = quaternion[0]
+            temp_transform.rotation.y = quaternion[1]
+            temp_transform.rotation.z = quaternion[2]
+            temp_transform.rotation.w = quaternion[3]
 
             temp_vel = Twist()
             temp_vel.linear.x = joint_trajectory.points[i].velocities[0]
@@ -149,7 +154,7 @@ class TrajectoryPointPublisher:
 
             # Publish trajectory point
             self.point_pub.publish(self.trajectory.points.pop(0))
-            rospy.sleep(0.01)
+            rospy.sleep(0.02)
 
 if __name__ == "__main__":
     rospy.init_node("pickup_trajectory")   
