@@ -6,6 +6,7 @@ import copy
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String
+from std_msgs.msg import Bool
 from topp_ros.srv import GenerateTrajectory, GenerateTrajectoryRequest
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint, \
     MultiDOFJointTrajectory, MultiDOFJointTrajectoryPoint
@@ -24,6 +25,7 @@ class TrajectoryPointPublisher:
         self.odom_flag = False
         self.odom_sub = rospy.Subscriber("odometry", Odometry, self.odom_cb)
         self.point_pub = rospy.Publisher("output/point", MultiDOFJointTrajectoryPoint, queue_size=1)
+        self.activity_pub = rospy.Publisher("topp/status", Bool, queue_size=1)
 
     def status_cb(self, msg):
         self.carrot_status = msg
@@ -35,9 +37,15 @@ class TrajectoryPointPublisher:
         self.odom_msg = msg
         self.odom_flag = True
 
+    def publish_trajectory_status(self, status):
+        msg = Bool()
+        msg.data = status
+        self.activity_pub.publish(msg)
+
     def trajectory_cb(self, msg):
         if len(msg.points) == 0:
-            print("TrajectoryPointPublisher - incorrect number of trajectory points >0 required")
+            print("TrajectoryPointPublisher - empty input trajectory recieved, RESET")
+            self.trajectory = MultiDOFJointTrajectory()
             return 
         
         x = []
@@ -139,22 +147,26 @@ class TrajectoryPointPublisher:
             
             if not self.odom_flag:
                 print("TrajectoryPointPublisher - odometry unavailable")
+                self.publish_trajectory_status(False)
                 rospy.sleep(0.5)
                 continue
 
             if not self.carrot_status.data == "HOLD":
                 print("TrajectoryPointPublisher - Position hold disabled")
+                self.publish_trajectory_status(False)
                 rospy.sleep(0.5)
                 continue
             
             if not self.trajectory.points:
                 print("TrajectoryPointPublisher - No trajectory available")
+                self.publish_trajectory_status(False)
                 rospy.sleep(0.5)
                 continue
 
             # Publish trajectory point
             self.point_pub.publish(self.trajectory.points.pop(0))
-            rospy.sleep(0.02)
+            self.publish_trajectory_status(True)
+            rospy.sleep(0.01)
 
 if __name__ == "__main__":
     rospy.init_node("pickup_trajectory")   

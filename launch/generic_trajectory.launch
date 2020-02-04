@@ -1,8 +1,8 @@
 <launch>
-    <arg name="namespace" default="red"/>
+    <arg name="namespace" default="$(env UAV_NAMESPACE)"/>
     <arg name="input_trajectory" default="topp/input/trajectory"/>
     <arg name="output_point" default="position_hold/trajectory"/>
-    <arg name="odom" default="/mavros/global_position/local"/>
+    <arg name="odom" default="mavros/global_position/local"/>
 
     <!-- Trajectory generation -->
     <node name="trajectory_gen" pkg="topp_ros" type="generate_toppra_trajectory.py" 
