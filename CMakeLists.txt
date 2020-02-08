@@ -13,6 +13,7 @@ add_service_files(
   FILES
   GenerateTrajectory.srv
   GetHelixPoints.srv
+  GenerateSearch.srv
   )
 
 generate_messages(

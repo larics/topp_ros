@@ -26,6 +26,8 @@ class TrajectoryPointPublisher:
         self.odom_sub = rospy.Subscriber("odometry", Odometry, self.odom_cb)
         self.point_pub = rospy.Publisher("output/point", MultiDOFJointTrajectoryPoint, queue_size=1)
         self.activity_pub = rospy.Publisher("topp/status", Bool, queue_size=1)
+        self.trajectory_flag_sub = rospy.Subscriber("trajectory_flag", Bool, self.trajectory_flag_cb)
+        self.publish_trajectory = True
 
     def status_cb(self, msg):
         self.carrot_status = msg
@@ -41,6 +43,9 @@ class TrajectoryPointPublisher:
         msg = Bool()
         msg.data = status
         self.activity_pub.publish(msg)
+
+    def trajectory_flag_cb(self, msg):
+        self.publish_trajectory = msg.data
 
     def trajectory_cb(self, msg):
         if len(msg.points) == 0:
@@ -160,6 +165,10 @@ class TrajectoryPointPublisher:
             if not self.trajectory.points:
                 print("TrajectoryPointPublisher - No trajectory available")
                 self.publish_trajectory_status(False)
+                rospy.sleep(0.5)
+                continue
+            if not self.publish_trajectory:
+                print("TrajectoryPointPublisher - Do not have a permission to publish trajectory.")
                 rospy.sleep(0.5)
                 continue
 
