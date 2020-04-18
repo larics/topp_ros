@@ -14,8 +14,9 @@ This repository depents on following repositories: [TOPP](https://github.com/qua
 
 **Installing TOPP-RA**
 Installing TOPP-RA can be a litle bit tricky. Here are instructions for installing basic functionality(which is enough for usage with topp_ros package) you can type:
-```
+``` bash
 git clone https://github.com/hungpham2511/toppra && cd toppra/
+git checkout 8df858b08175d4884b803bf6ab7f459205e54fa2 #checkout to working python 2.7 version of the toppra package
 pip install -r requirements.txt --user
 python setup.py install --user
 ```
