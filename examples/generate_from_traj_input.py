@@ -81,8 +81,8 @@ class TrajectoryPointPublisher:
             # constraints are added only on the first waypoint since the
             # TOPP-RA reads them only from there.
             if i==0:
-                waypoint.velocities = [1, 1, 1, 1] 
-                waypoint.accelerations = [0.25, 0.25, 0.5, 0.125]
+                waypoint.velocities = [1.5, 1.5, 0.8, 1]
+                waypoint.accelerations = [0.75, 0.75, 0.8, 0.5]
 
             # Append all waypoints in request
             request.waypoints.points.append(copy.deepcopy(waypoint))
