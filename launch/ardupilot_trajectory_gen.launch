@@ -2,7 +2,7 @@
     <arg name="namespace" default="red"/>
     <arg name="input_pose" default="topp/input/pose"/>
     <arg name="output_point" default="position_hold/trajectory"/>
-    <arg name="odom" default="msf_core/odometry"/>
+    <arg name="odom" default="mavros/global_position/local"/>
 
     <!-- Trajectory generation -->
     <node name="trajectory_gen" pkg="topp_ros" type="generate_toppra_trajectory.py" 
