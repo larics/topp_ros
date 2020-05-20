@@ -19,6 +19,7 @@ class TrajectoryPointPublisher:
         self.trajectory = MultiDOFJointTrajectory()
         self.pose_sub = rospy.Subscriber("input/pose", PoseStamped, self.pose_cb)
         self.carrot_status = String()
+        self.carrot_status.data = "HOLD"
         self.status_sub = rospy.Subscriber("carrot/status", String, self.status_cb)
         self.odom_msg = Odometry()
         self.odom_flag = False
