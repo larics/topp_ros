@@ -153,23 +153,24 @@ class TrajectoryPointPublisher:
             if not self.odom_flag:
                 print("TrajectoryPointPublisher - odometry unavailable")
                 self.publish_trajectory_status(False)
-                rospy.sleep(0.5)
+                rospy.sleep(0.01)
                 continue
 
             if not self.carrot_status.data == "HOLD":
                 print("TrajectoryPointPublisher - Position hold disabled")
                 self.publish_trajectory_status(False)
-                rospy.sleep(0.5)
+                rospy.sleep(0.01)
                 continue
             
             if not self.trajectory.points:
                 print("TrajectoryPointPublisher - No trajectory available")
                 self.publish_trajectory_status(False)
-                rospy.sleep(0.5)
+                rospy.sleep(0.01)
                 continue
+                
             if not self.publish_trajectory:
                 print("TrajectoryPointPublisher - Do not have a permission to publish trajectory.")
-                rospy.sleep(0.5)
+                rospy.sleep(0.01)
                 continue
 
             # Publish trajectory point
