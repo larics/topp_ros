@@ -6,6 +6,9 @@ from tf.transformations import quaternion_from_euler
 from trajectory_msgs.msg import MultiDOFJointTrajectory, MultiDOFJointTrajectoryPoint
 from geometry_msgs.msg import Transform, Twist, Twist
 import math
+import matplotlib.pyplot as plt
+import tf
+import numpy as np
 
 def to_trajectory_point_msg_q(x, y, z, qx, qy, qz, qw):
   point_msg = MultiDOFJointTrajectoryPoint()
@@ -57,46 +60,43 @@ def publish_circle_once(circle_radus, number_of_points):
   print("Generating circle trajectory...")
   trajectory_msg = MultiDOFJointTrajectory()
   trajectory_msg.header.stamp = rospy.Time.now()
-  trajectory_msg.points.append(
-    to_trajectory_point_msg_q(
-      odom_msg.pose.pose.position.x,
-      odom_msg.pose.pose.position.y,
-      odom_msg.pose.pose.position.z,
-      odom_msg.pose.pose.orientation.x,
-      odom_msg.pose.pose.orientation.y,
-      odom_msg.pose.pose.orientation.z,
-      odom_msg.pose.pose.orientation.w
-      )
-    )
   
-  deg_to_rad = math.pi / 360.0
+  deg_to_rad = math.pi / 180.0
   angle_increment = 360.0 / number_of_points * deg_to_rad
 
+  xs = []
+  ys = []
+  yaws = np.linspace(0, np.pi, number_of_points + 1)
   for i in range(number_of_points + 1):
-    circle_x = odom_msg.pose.pose.position.x + circle_radus * math.cos(i * angle_increment)
+    circle_x = odom_msg.pose.pose.position.x - circle_radus + circle_radus * math.cos(i * angle_increment)
     circle_y = odom_msg.pose.pose.position.y + circle_radus * math.sin(i * angle_increment)
+    
+    yaw_angle = yaws[i]
+    print(yaw_angle)
+    q = tf.transformations.quaternion_from_euler(0, 0, yaw_angle)
+    print(q)
     trajectory_msg.points.append(
       to_trajectory_point_msg_q(
         circle_x,
         circle_y,
-        odom_msg.pose.pose.position.z,
-        odom_msg.pose.pose.orientation.x,
-        odom_msg.pose.pose.orientation.y,
-        odom_msg.pose.pose.orientation.z,
-        odom_msg.pose.pose.orientation.w
+        odom_msg.pose.pose.position.z + math.sin(i * angle_increment),
+        q[0], q[1], q[2], q[3]
       )
     )
+    xs.append(circle_x)
+    ys.append(circle_y)
     
-  trajectory_pub = rospy.Publisher('input/trajectory', MultiDOFJointTrajectory, queue_size=1)
+  trajectory_pub = rospy.Publisher('topp/input/trajectory', MultiDOFJointTrajectory, queue_size=1)
   while trajectory_pub.get_num_connections() < 1:
     print("Waiting for someone to listen to the circle trajectory...")
     rospy.sleep(1.0)
 
   trajectory_pub.publish(trajectory_msg)
   print("Trajectory successfully published.")
+  
 
 if __name__ == "__main__":
   rospy.init_node("circle_generator_node")
-  publish_circle_once(2, 50)
+  publish_circle_once(3, 100)
 
   
