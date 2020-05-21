@@ -20,6 +20,7 @@ class TrajectoryPointPublisher:
         self.trajectory = MultiDOFJointTrajectory()
         self.pose_sub = rospy.Subscriber("input/trajectory", MultiDOFJointTrajectory, self.trajectory_cb)
         self.carrot_status = String()
+        self.carrot_status.data = "HOLD"
         self.status_sub = rospy.Subscriber("carrot/status", String, self.status_cb)
         self.odom_msg = Odometry()
         self.odom_flag = False
@@ -81,8 +82,8 @@ class TrajectoryPointPublisher:
             # constraints are added only on the first waypoint since the
             # TOPP-RA reads them only from there.
             if i==0:
-                waypoint.velocities = [1.5, 1.5, 0.8, 1]
-                waypoint.accelerations = [0.75, 0.75, 0.8, 0.5]
+                waypoint.velocities = [5, 5, 5, 2.5]
+                waypoint.accelerations = [2.75, 2.75, 2.75, 1.5]
 
             # Append all waypoints in request
             request.waypoints.points.append(copy.deepcopy(waypoint))
