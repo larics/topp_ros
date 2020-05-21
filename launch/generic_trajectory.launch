@@ -10,7 +10,7 @@
 
     <!-- Trajectory point publisher -->
     <node name="trajectory_publisher" pkg="topp_ros" type="generate_from_traj_input.py" 
-        ns="$(arg namespace)">
+        ns="$(arg namespace)" output="screen">
         <remap from="input/trajectory" to="$(arg input_trajectory)"/>
         <remap from="output/point" to="$(arg output_point)"/>
         <remap from="odometry" to="$(arg odom)"/>
