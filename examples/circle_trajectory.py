@@ -89,7 +89,7 @@ def circle_trajectory(angle_increment, number_of_points, odom_msg, number_of_cir
       to_trajectory_point_msg_q(
         circle_x,
         circle_y,
-        odom_msg.pose.pose.position.z + math.sin(i * angle_increment),
+        odom_msg.pose.pose.position.z,
         odom_msg.pose.pose.orientation.x, 
         odom_msg.pose.pose.orientation.y,
         odom_msg.pose.pose.orientation.z,
@@ -112,8 +112,8 @@ def publish_trajectory_once(circle_radus, number_of_points, number_of_circles):
     return
 
   angle_increment = 360.0 / number_of_points * DEG_TO_RAD
-  trajectory_msg = circle_trajectory(angle_increment, number_of_points, odom_msg, number_of_circles, circle_radus)
-  #trajectory_msg = lemnicscate_trajectory(angle_increment, number_of_points, odom_msg, number_of_circles, circle_radus)
+  # trajectory_msg = circle_trajectory(angle_increment, number_of_points, odom_msg, number_of_circles, circle_radus)
+  trajectory_msg = lemnicscate_trajectory(angle_increment, number_of_points, odom_msg, number_of_circles, circle_radus)
   trajectory_pub = rospy.Publisher('topp/input/trajectory', MultiDOFJointTrajectory, queue_size=1)
   while trajectory_pub.get_num_connections() < 1:
     print("Waiting for someone to listen to the trajectory...")
@@ -125,6 +125,6 @@ def publish_trajectory_once(circle_radus, number_of_points, number_of_circles):
 
 if __name__ == "__main__":
   rospy.init_node("trajectory_generator_node")
-  publish_trajectory_once(2, 100, 3)
+  publish_trajectory_once(2, 100, 10)
 
   
