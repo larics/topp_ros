@@ -1,5 +1,5 @@
 <launch>
-    <arg name="namespace" default="red"/>
+    <arg name="namespace" default="$(env UAV_NAMESPACE)"/>
     <arg name="input_pose" default="topp/input/pose"/>
     <arg name="output_point" default="position_hold/trajectory"/>
     <arg name="odom" default="mavros/global_position/local"/>
