@@ -106,7 +106,12 @@ class TrajectoryPointPublisher:
             temp_transform.translation.x = joint_trajectory.points[i].positions[0]
             temp_transform.translation.y = joint_trajectory.points[i].positions[1]
             temp_transform.translation.z = joint_trajectory.points[i].positions[2]
-            temp_transform.rotation.w = 1.0
+            
+            quaternion = tf.transformations.quaternion_from_euler(0, 0, joint_trajectory.points[i].positions[3])
+            temp_transform.rotation.x = quaternion[0]
+            temp_transform.rotation.y = quaternion[1]
+            temp_transform.rotation.z = quaternion[2]
+            temp_transform.rotation.w = quaternion[3]
 
             temp_vel = Twist()
             temp_vel.linear.x = joint_trajectory.points[i].velocities[0]
