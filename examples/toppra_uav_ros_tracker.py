@@ -13,23 +13,50 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint, \
 from geometry_msgs.msg import Transform, Twist
 
 
+class TrackerParameters:
+    def __init__(self):
+        self.velocity = [5, 5, 5, 2.5]
+        self.acceleration = [2.75, 2.75, 2.75, 1.5]
+        self.sampling_frequency = 100
+        self.n_gridpoints = 500
+
 class UavRosTracker:
 
-    def __init__(self):        
+    def __init__(self):
+        # Load tracker parameters
+        self.tracker_params = TrackerParameters()
+
+        self.tracker_params.n_gridpoints = rospy.get_param("~topp_tracker/n_gridpoints")
+        self.tracker_params.sampling_frequency = rospy.get_param("~topp_tracker/sampling_frequency")
+
+        self.tracker_params.velocity[0] = rospy.get_param("~topp_tracker/constraints/velocity/x")
+        self.tracker_params.velocity[1] = rospy.get_param("~topp_tracker/constraints/velocity/y")
+        self.tracker_params.velocity[2] = rospy.get_param("~topp_tracker/constraints/velocity/z")
+        self.tracker_params.velocity[3] = rospy.get_param("~topp_tracker/constraints/velocity/yaw")
+
+        self.tracker_params.acceleration[0] = rospy.get_param("~topp_tracker/constraints/acceleration/x")
+        self.tracker_params.acceleration[1] = rospy.get_param("~topp_tracker/constraints/acceleration/y")
+        self.tracker_params.acceleration[2] = rospy.get_param("~topp_tracker/constraints/acceleration/z")
+        self.tracker_params.acceleration[3] = rospy.get_param("~topp_tracker/constraints/acceleration/yaw")
+
         self.point_index = 0
         self.trajectory = MultiDOFJointTrajectory()
         self.pose_sub = rospy.Subscriber("input/trajectory", MultiDOFJointTrajectory, self.trajectory_cb)
+        
         self.carrot_status = String()
         self.carrot_status.data = "HOLD"
         self.status_sub = rospy.Subscriber("carrot/status", String, self.status_cb)
+        
         self.odom_msg = Odometry()
         self.odom_flag = False
         self.odom_sub = rospy.Subscriber("odometry", Odometry, self.odom_cb)
+        
         self.point_pub = rospy.Publisher("output/point", MultiDOFJointTrajectoryPoint, queue_size=1)
         self.activity_pub = rospy.Publisher("topp/status", Bool, queue_size=1)
+        
         self.trajectory_flag_sub = rospy.Subscriber("trajectory_flag", Bool, self.trajectory_flag_cb)
         self.publish_trajectory = True
-
+        
     def status_cb(self, msg):
         self.carrot_status = msg
         if not self.carrot_status.data == "HOLD" and self.trajectory.points:
