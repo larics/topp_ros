@@ -109,29 +109,20 @@ class UavRosTracker:
             # constraints are added only on the first waypoint since the
             # TOPP-RA reads them only from there.
             if i==0:
-                waypoint.velocities = [5, 5, 5, 2.5]
-                waypoint.accelerations = [2.75, 2.75, 2.75, 1.5]
+                waypoint.velocities = [self.tracker_params.velocity[0], self.tracker_params.velocity[1], self.tracker_params.velocity[2], self.tracker_params.velocity[3]]
+                waypoint.accelerations = [self.tracker_params.acceleration[0], self.tracker_params.acceleration[1], self.tracker_params.acceleration[2], self.tracker_params.acceleration[3]]
 
             # Append all waypoints in request
             request.waypoints.points.append(copy.deepcopy(waypoint))
 
-        # Set up joint names. This step is not necessary
         request.waypoints.joint_names = ["x", "y", "z", "yaw"]
-        # Set up sampling frequency of output trajectory.
-        request.sampling_frequency = 100.0
-        # Set up number of gridpoints. The more gridpoints there are, 
-        # trajectory interpolation will be more accurate but slower.
-        # Defaults to 100
-        request.n_gridpoints = 500
-        # If you want to plot Maximum Velocity Curve and accelerations you can
-        # send True in this field. This is intended to be used only when you
-        # have to debug something since it will block the service until plot
-        # is closed.
+        request.sampling_frequency = self.tracker_params.sampling_frequency
+        request.n_gridpoints = self.tracker_params.n_gridpoints
         request.plot = False
+
         # Request the trajectory
         request_trajectory_service = rospy.ServiceProxy("generate_toppra_trajectory", GenerateTrajectory)
         response = request_trajectory_service(request)
-
 
         # Response will have trajectory and bool variable success. If for some
         # reason the trajectory was not able to be planned or the configuration
