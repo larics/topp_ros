@@ -41,7 +41,7 @@ class UavRosTracker:
 
         self.point_index = 0
         self.trajectory = MultiDOFJointTrajectory()
-        self.pose_sub = rospy.Subscriber("input/trajectory", MultiDOFJointTrajectory, self.trajectory_cb)
+        self.pose_sub = rospy.Subscriber("topp/input/trajectory", MultiDOFJointTrajectory, self.trajectory_cb)
         
         self.carrot_status = String()
         self.carrot_status.data = "HOLD"
@@ -54,8 +54,8 @@ class UavRosTracker:
         self.point_pub = rospy.Publisher("output/point", MultiDOFJointTrajectoryPoint, queue_size=1)
         self.activity_pub = rospy.Publisher("topp/status", Bool, queue_size=1)
         
+        self.enable_trajectory = True
         self.trajectory_flag_sub = rospy.Subscriber("trajectory_flag", Bool, self.trajectory_flag_cb)
-        self.publish_trajectory = True
         
     def status_cb(self, msg):
         self.carrot_status = msg
@@ -73,7 +73,7 @@ class UavRosTracker:
         self.activity_pub.publish(msg)
 
     def trajectory_flag_cb(self, msg):
-        self.publish_trajectory = msg.data
+        self.enable_trajectory = msg.data
 
     def trajectory_cb(self, msg):
         if len(msg.points) == 0:
@@ -187,7 +187,7 @@ class UavRosTracker:
                 rospy.sleep(0.01)
                 continue
                 
-            if not self.publish_trajectory:
+            if not self.enable_trajectory:
                 rospy.loginfo_throttle(1.0, "UavRosTracker - Do not have a permission to publish trajectory.")
                 rospy.sleep(0.01)
                 continue
