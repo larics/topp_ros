@@ -20,6 +20,11 @@ class TrackerParameters:
         self.sampling_frequency = 100
         self.n_gridpoints = 500
 
+class TrackerStatus:
+    off = "OFF"
+    accept = "ACCEPT"
+    active = "ACTIVE"
+
 class UavRosTracker:
 
     def __init__(self):
@@ -41,7 +46,7 @@ class UavRosTracker:
 
         self.point_index = 0
         self.trajectory = MultiDOFJointTrajectory()
-        self.pose_sub = rospy.Subscriber("topp/input/trajectory", MultiDOFJointTrajectory, self.trajectory_cb)
+        self.pose_sub = rospy.Subscriber("topp/input_trajectory", MultiDOFJointTrajectory, self.trajectory_cb)
         
         self.carrot_status = String()
         self.carrot_status.data = "HOLD"
@@ -52,7 +57,7 @@ class UavRosTracker:
         self.odom_sub = rospy.Subscriber("odometry", Odometry, self.odom_cb)
         
         self.point_pub = rospy.Publisher("output/point", MultiDOFJointTrajectoryPoint, queue_size=1)
-        self.activity_pub = rospy.Publisher("topp/status", Bool, queue_size=1)
+        self.activity_pub = rospy.Publisher("topp/status", String, queue_size=1)
         
         self.enable_trajectory = True
         self.trajectory_flag_sub = rospy.Subscriber("trajectory_flag", Bool, self.trajectory_flag_cb)
@@ -67,8 +72,8 @@ class UavRosTracker:
         self.odom_msg = msg
         self.odom_flag = True
 
-    def publish_trajectory_status(self, status):
-        msg = Bool()
+    def publish_tracker_status(self, status):
+        msg = String()
         msg.data = status
         self.activity_pub.publish(msg)
 
@@ -171,30 +176,31 @@ class UavRosTracker:
             
             if not self.odom_flag:
                 rospy.loginfo_throttle(1.0, "UavRosTracker - odometry unavailable")
-                self.publish_trajectory_status(False)
+                self.publish_tracker_status(TrackerStatus.off)
                 rospy.sleep(0.01)
                 continue
 
             if not self.carrot_status.data == "HOLD":
                 rospy.loginfo_throttle(1.0, "UavRosTracker - Position hold disabled")
-                self.publish_trajectory_status(False)
+                self.publish_tracker_status(TrackerStatus.off)
                 rospy.sleep(0.01)
                 continue
             
             if not self.trajectory.points:
                 rospy.loginfo_throttle(1.0, "UavRosTracker - No trajectory available")
-                self.publish_trajectory_status(False)
+                self.publish_tracker_status(TrackerStatus.accept)
                 rospy.sleep(0.01)
                 continue
                 
             if not self.enable_trajectory:
                 rospy.loginfo_throttle(1.0, "UavRosTracker - Do not have a permission to publish trajectory.")
+                self.publish_tracker_status(TrackerStatus.active)
                 rospy.sleep(0.01)
                 continue
 
             # Publish trajectory point
             self.point_pub.publish(self.trajectory.points.pop(0))
-            self.publish_trajectory_status(True)
+            self.publish_tracker_status(TrackerStatus.active)
             rospy.sleep(0.01)
 
 if __name__ == "__main__":
