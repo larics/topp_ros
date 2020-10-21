@@ -18,6 +18,7 @@ from std_srvs.srv import EmptyResponse
 
 class TrackerParameters:
     def __init__(self):
+        self.request_permission = True
         self.velocity = [5, 5, 5, 2.5]
         self.acceleration = [2.75, 2.75, 2.75, 1.5]
         self.sampling_frequency = 100
@@ -37,7 +38,9 @@ class UavRosTracker:
 
         self.tracker_params.n_gridpoints = rospy.get_param("~topp_tracker/n_gridpoints")
         self.tracker_params.sampling_frequency = rospy.get_param("~topp_tracker/sampling_frequency")
-
+        self.tracker_params.request_permission = rospy.get_param("~topp_tracker/request_permission")
+        self.rate = 1.0 / self.tracker_params.sampling_frequency
+        
         self.tracker_params.velocity[0] = rospy.get_param("~topp_tracker/constraints/velocity/x")
         self.tracker_params.velocity[1] = rospy.get_param("~topp_tracker/constraints/velocity/y")
         self.tracker_params.velocity[2] = rospy.get_param("~topp_tracker/constraints/velocity/z")
@@ -92,7 +95,7 @@ class UavRosTracker:
             self.trajectory = MultiDOFJointTrajectory()
             return 
         
-        if (self.carrot_trajectory_recieved):
+        if (not self.carrot_trajectory_recieved):
             print("UavRosTracker - trajectory recieved but carrot unavailable")
             self.trajectory = MultiDOFJointTrajectory()
             return
@@ -156,6 +159,8 @@ class UavRosTracker:
         # was incomplete or wrong it will return False.
         print ("UavRosTracker: Converting trajectory to multi dof")
         joint_trajectory = response.trajectory
+
+        self.enable_trajectory = False
         self.trajectory = self.JointTrajectory2MultiDofTrajectory(joint_trajectory)
 
         # Publish the path
@@ -236,7 +241,7 @@ class UavRosTracker:
                 rospy.sleep(0.01)
                 continue
                 
-            if not self.enable_trajectory:
+            if self.tracker_params.request_permission and not self.enable_trajectory:
                 rospy.loginfo_throttle(1.0, "UavRosTracker - Do not have a permission to publish trajectory.")
                 self.publish_tracker_status(TrackerStatus.wait)
                 rospy.sleep(0.01)
@@ -245,7 +250,7 @@ class UavRosTracker:
             # Publish trajectory point
             self.point_pub.publish(self.trajectory.points.pop(0))
             self.publish_tracker_status(TrackerStatus.active)
-            rospy.sleep(0.01)
+            rospy.sleep(self.rate)
 
 if __name__ == "__main__":
     rospy.init_node("uav_ros_tracker")   

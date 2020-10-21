@@ -1,7 +1,8 @@
 topp_tracker:
   sampling_frequency: 100
   n_gridpoints: 500
-  
+  request_permission: True
+
   constraints:
 
     velocity:

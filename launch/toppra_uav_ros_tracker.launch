@@ -3,20 +3,20 @@
     <arg name="input_trajectory" default="topp/input/trajectory"/>
     <arg name="output_point" default="position_hold/trajectory"/>
     <arg name="odom" default="mavros/global_position/local"/>
-    <arg name="tracker_config" default="tracker_config_default.yaml" />
+    <arg name="tracker_config" default="$(find topp_ros)/config/tracker_config_default.yaml" />
 
     <!-- Trajectory generation -->
-    <node name="trajectory_gen" pkg="topp_ros" type="generate_toppra_trajectory.py" 
+    <node name="topp_trajectory_gen" pkg="topp_ros" type="generate_toppra_trajectory.py" 
         output="screen" ns="$(arg namespace)"/>
 
     <!-- Trajectory point publisher -->
-    <node name="trajectory_publisher" pkg="topp_ros" type="toppra_uav_ros_tracker.py" 
+    <node name="toppra_uav_ros_tracker" pkg="topp_ros" type="toppra_uav_ros_tracker.py" 
         ns="$(arg namespace)" output="screen">
         <remap from="input/trajectory" to="$(arg input_trajectory)"/>
         <remap from="output/point" to="$(arg output_point)"/>
         <remap from="odometry" to="$(arg odom)"/>
 
-        <rosparam file="$(find topp_ros)/config/$(arg tracker_config)" command="load"/>
+        <rosparam file="$(arg tracker_config)" command="load"/>
     </node>
 
 </launch>
