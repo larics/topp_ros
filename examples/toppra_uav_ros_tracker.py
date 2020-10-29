@@ -69,7 +69,14 @@ class UavRosTracker:
 
         self.enable_trajectory = False
         self.enable_service = rospy.Service("topp/enable", Empty, self.enable_service_cb)
+        self.topp_reset = rospy.Service("topp/reset", Empty, self.reset_service_cb)
         
+    def reset_service_cb(self, req):
+        if len(self.trajectory.points) == 0:
+            print("UavRosTracker - RESET request recieved")
+            self.trajectory = MultiDOFJointTrajectory()
+        return EmptyResponse()
+
     def status_cb(self, msg):
         self.carrot_status = msg
         if not self.carrot_status.data == "HOLD" and self.trajectory.points:
