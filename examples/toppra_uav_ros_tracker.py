@@ -14,6 +14,7 @@ from geometry_msgs.msg import Transform, Twist
 from nav_msgs.msg import Path
 from std_srvs.srv import Empty
 from std_srvs.srv import EmptyResponse
+from math import pi, ceil, floor
 
 
 class TrackerParameters:
@@ -72,9 +73,8 @@ class UavRosTracker:
         self.topp_reset = rospy.Service("topp/reset", Empty, self.reset_service_cb)
         
     def reset_service_cb(self, req):
-        if len(self.trajectory.points) == 0:
-            print("UavRosTracker - RESET request recieved")
-            self.trajectory = MultiDOFJointTrajectory()
+        print("UavRosTracker - RESET request recieved")
+        self.trajectory = MultiDOFJointTrajectory()
         return EmptyResponse()
 
     def status_cb(self, msg):
@@ -131,6 +131,16 @@ class UavRosTracker:
                 point.transforms[0].rotation.y,
                 point.transforms[0].rotation.z,
                 point.transforms[0].rotation.w])[2])
+
+            # Fix Toppra orientation, at this point atleast two points are in trajectory
+            curr_yaw = yaw[-1]
+            previous_yaw = yaw[-2]
+            delta = previous_yaw - curr_yaw
+            if delta > pi:
+                yaw[-1] = yaw[-1] + ceil(floor(abs(delta)/pi)/2.0) * 2 * pi
+            elif delta < -pi:
+                yaw[-1] = yaw[-1] - ceil(floor(abs(delta)/pi)/2.0) * 2 * pi
+
         
         for x_,y_,z_,yaw_ in zip(x, y, z, yaw):
             print("Recieved point: ", x_, y_, z_, yaw_)
