@@ -14,7 +14,8 @@ from geometry_msgs.msg import Transform, Twist
 from nav_msgs.msg import Path
 from std_srvs.srv import Empty
 from std_srvs.srv import EmptyResponse
-from math import pi, ceil, floor
+from math import pi, ceil, floor, sqrt
+import numpy as np
 
 
 class TrackerParameters:
@@ -96,31 +97,65 @@ class UavRosTracker:
         self.enable_trajectory = True
         return EmptyResponse()
 
+    def fix_topp_yaw(self, curr_yaw, previous_yaw):
+        delta = previous_yaw - curr_yaw
+        if delta > pi:
+            return curr_yaw + ceil(floor(abs(delta)/pi)/2.0) * 2 * pi
+        elif delta < -pi:
+            return curr_yaw - ceil(floor(abs(delta)/pi)/2.0) * 2 * pi
+        return curr_yaw
+            
+    def interpolate_points(self, start_p, end_p, res=1.0):
+        print("Interpolating points")
+        x = []
+        y = []
+        z = []
+        yaw = []
+        print("End: ", end_p.transforms[0].translation)
+        print("Start: ", start_p.transforms[0].translation)
+        distance = sqrt((end_p.transforms[0].translation.x - start_p.transforms[0].translation.x) ** 2 + 
+            (end_p.transforms[0].translation.y - start_p.transforms[0].translation.y) ** 2 + 
+            (end_p.transforms[0].translation.z - start_p.transforms[0].translation.z) ** 2)
+        print(distance)
+        increments = np.linspace(0, 1, round(distance/res), endpoint=False)
+
+        start_yaw = tf.transformations.euler_from_quaternion(
+                [start_p.transforms[0].rotation.x, 
+                start_p.transforms[0].rotation.y,
+                start_p.transforms[0].rotation.z,
+                start_p.transforms[0].rotation.w])[2]
+        end_yaw = tf.transformations.euler_from_quaternion(
+                [end_p.transforms[0].rotation.x, 
+                end_p.transforms[0].rotation.y,
+                end_p.transforms[0].rotation.z,
+                end_p.transforms[0].rotation.w])[2]
+        for delta in increments:
+            x.append((1 - delta) * start_p.transforms[0].translation.x + delta * end_p.transforms[0].translation.x)
+            y.append((1 - delta) * start_p.transforms[0].translation.y + delta * end_p.transforms[0].translation.y)
+            z.append((1 - delta) * start_p.transforms[0].translation.z + delta * end_p.transforms[0].translation.z)
+            yaw.append((1 - delta) * start_yaw + delta * end_yaw)
+
+            if len(yaw) > 1:
+                yaw[-1] = self.fix_topp_yaw(yaw[-1], yaw[-2])
+            
+        return x, y, z, yaw
+
     def trajectory_cb(self, msg):
         if len(msg.points) == 0:
             print("UavRosTracker - empty input trajectory recieved, RESET")
             self.trajectory = MultiDOFJointTrajectory()
-            return 
+            return
         
         if (not self.carrot_trajectory_recieved):
             print("UavRosTracker - trajectory recieved but carrot unavailable")
             self.trajectory = MultiDOFJointTrajectory()
             return
 
-        x = []
-        y = []
-        z = []
-        yaw = []
-
-        # Append first point from ROS tracker to avoid jumps
-        x.append(self.carrot_trajectory.transforms[0].translation.x)
-        y.append(self.carrot_trajectory.transforms[0].translation.y)
-        z.append(self.carrot_trajectory.transforms[0].translation.z)
-        yaw.append(tf.transformations.euler_from_quaternion(
-                [self.carrot_trajectory.transforms[0].rotation.x, 
-                self.carrot_trajectory.transforms[0].rotation.y,
-                self.carrot_trajectory.transforms[0].rotation.z,
-                self.carrot_trajectory.transforms[0].rotation.w])[2])
+        # Nicely interpolate points from current to first
+        x, y, z, yaw = self.interpolate_points(self.carrot_trajectory, msg.points[0])
+        print(x)
+        print(y)
+        print(yaw)
 
         for point in msg.points:
             x.append(point.transforms[0].translation.x)
@@ -133,14 +168,7 @@ class UavRosTracker:
                 point.transforms[0].rotation.w])[2])
 
             # Fix Toppra orientation, at this point atleast two points are in trajectory
-            curr_yaw = yaw[-1]
-            previous_yaw = yaw[-2]
-            delta = previous_yaw - curr_yaw
-            if delta > pi:
-                yaw[-1] = yaw[-1] + ceil(floor(abs(delta)/pi)/2.0) * 2 * pi
-            elif delta < -pi:
-                yaw[-1] = yaw[-1] - ceil(floor(abs(delta)/pi)/2.0) * 2 * pi
-
+            yaw[-1] = self.fix_topp_yaw(yaw[-1], yaw[-2])
         
         for x_,y_,z_,yaw_ in zip(x, y, z, yaw):
             print("Recieved point: ", x_, y_, z_, yaw_)
