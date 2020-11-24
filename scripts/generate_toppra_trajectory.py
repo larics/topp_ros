@@ -35,8 +35,8 @@ class ToppraTrajectory():
         rospy.spin()
 
     def generateToppraTrajectoryCallback(self, req):
-        print " "
-        print "Generating TOPP-RA trajectory."
+        print (" ")
+        print ("Generating TOPP-RA trajectory.")
         tstart = time.time()
         res = GenerateTrajectoryResponse()
         dof = len(req.waypoints.points[0].positions)
@@ -44,7 +44,7 @@ class ToppraTrajectory():
 
         # If there is not enough waypoints to generate a trajectory return false
         if (n <= 1 or dof == 0):
-            print "You must provide at least 2 points to generate a valid trajectory."
+            print ("You must provide at least 2 points to generate a valid trajectory.")
             res.trajectory.success = False
             return res
 
@@ -125,7 +125,7 @@ class ToppraTrajectory():
             res.trajectory.joint_names = copy.deepcopy(req.waypoints.joint_names)
         self.raw_trajectory_pub.publish(res.trajectory)
         self.raw_waypoints_pub.publish(req.waypoints)
-        print "Time elapsed: ", time.time()-tstart
+        print ("Time elapsed: ", time.time()-tstart)
         return res
 
     def TOPPRA2JointTrajectory(self, jnt_traj, f):
