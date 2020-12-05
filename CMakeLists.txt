@@ -26,6 +26,6 @@ catkin_package(
   CATKIN_DEPENDS std_msgs trajectory_msgs geometry_msgs
 )
 
-catkin_install_python(PROGRAMS scripts/generate_toppra_trajectory.py
+catkin_install_python(PROGRAMS scripts/generate_toppra_trajectory.py scripts/test_toppra.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

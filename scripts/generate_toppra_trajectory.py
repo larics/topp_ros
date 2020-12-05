@@ -81,7 +81,10 @@ class ToppraTrajectory():
 
         # Retime the trajectory, only this step is necessary.
         t0 = time.time()
-        jnt_traj, aux_traj = instance.compute_trajectory(0, 0)
+        #### ROS-Noetic fix
+        #jnt_traj, aux_traj = instance.compute_trajectory(0, 0)
+        jnt_traj = instance.compute_trajectory()
+        ####
         #print("Parameterization time: {:} secs".format(time.time() - t0))
 
         # Plot for debugging
