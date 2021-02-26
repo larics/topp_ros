@@ -74,7 +74,8 @@ class ToppraTrajectory():
 
         # Setup a parametrization instance
         if (req.n_gridpoints <= 0):
-            gridpoints = np.linspace(0, path.duration, 100)
+            num_grid_points = np.max([100, n*2])
+            gridpoints = np.linspace(0, path.duration, num_grid_points)
         else:
             gridpoints = np.linspace(0, path.duration, req.n_gridpoints)
         instance = algo.TOPPRA([pc_vel, pc_acc], path, gridpoints=gridpoints, solver_wrapper='seidel')
@@ -116,6 +117,9 @@ class ToppraTrajectory():
             plt.ylabel("Path velocity square")
             plt.legend()
             plt.tight_layout()
+            plt.show()
+
+            plt.plot(qs_sample[:,0], qs_sample[:,1])
             plt.show()
 
         # Convert to JointTrajectory message
