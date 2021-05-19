@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import print_function
 import copy, time
 
 # Ros imports
@@ -73,7 +73,7 @@ class RequestTrajectory():
         # reason the trajectory was not able to be planned or the configuration
         # was incomplete or wrong it will return False.
 
-        print "Converting trajectory to multi dof"
+        print("Converting trajectory to multi dof")
         joint_trajectory = response.trajectory
         multi_dof_trajectory = self.JointTrajectory2MultiDofTrajectory(joint_trajectory)
         trajectory_pub.publish(multi_dof_trajectory)
