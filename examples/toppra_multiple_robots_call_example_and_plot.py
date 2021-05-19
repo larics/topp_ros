@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import print_function
 import copy, time, math
 
 # Ros imports
@@ -241,7 +241,7 @@ class RequestTrajectory():
 
 
     def generateTrajectoryCallback(self, msg):
-        print "Generating trajectory"
+        print("Generating trajectory")
         # Uav + ugv for westpoint, circular trajectory
         """
         x_uav = []
@@ -328,9 +328,9 @@ class RequestTrajectory():
         request.waypoints.joint_names = ["x_uav", "y_uav", "z_uav", "yaw_uav", "x_ugv", "y_ugv", "x_man", "y_man", "z_man", "yaw_man"]
         request.sampling_frequency = 100.0
         response = self.request_trajectory_service(request)
-        print "Total trajectory time: ", len(response.trajectory.points)/request.sampling_frequency
+        print("Total trajectory time: ", len(response.trajectory.points)/request.sampling_frequency)
 
-        print "Converting trajectory to multi dof"
+        print("Converting trajectory to multi dof")
         joint_trajectory = response.trajectory
         multi_dof_trajectory = self.jointTrajectory2MultiDofTrajectory(joint_trajectory)
         self.trajectory_pub.publish(multi_dof_trajectory)

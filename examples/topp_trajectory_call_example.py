@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import print_function
 import copy, time
 
 # Ros imports
@@ -46,7 +46,7 @@ class RequestTrajectory():
         request.sampling_frequency = 100.0
         response = request_trajectory_service(request)
 
-        print "Converting trajectory to multi dof"
+        print("Converting trajectory to multi dof")
         joint_trajectory = response.trajectory
         multi_dof_trajectory = self.JointTrajectory2MultiDofTrajectory(joint_trajectory)
         trajectory_pub.publish(multi_dof_trajectory)

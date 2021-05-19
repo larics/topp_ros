@@ -1,3 +1,4 @@
+from __future__ import print_function
 import toppra as ta
 import toppra.constraint as constraint
 import toppra.algorithm as algo
@@ -19,7 +20,7 @@ def main():
     np.random.seed(SEED)
     way_pts = np.random.randn(N_samples, dof)
     #print way_pts
-    print "SplineInterpolator"
+    print("SplineInterpolator")
     path = ta.SplineInterpolator(np.linspace(0, 1, 5), way_pts)
 
     # Create velocity bounds, then velocity constraint object

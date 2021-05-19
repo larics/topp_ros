@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import print_function
 import string, time, copy
 from pylab import *
 from numpy import *
@@ -27,14 +27,14 @@ class ToppTrajectory():
         rospy.spin()
 
     def generateToppTrajectoryCallback(self, req):
-        print "Generating TOPP trajectory."
+        print("Generating TOPP trajectory.")
         res = GenerateTrajectoryResponse()
         dof = len(req.waypoints.points[0].positions)
         n = len(req.waypoints.points)
 
         # If there is not enough waypoints to generate a trajectory return false
         if (n <= 1 or dof == 0):
-            print "You must provide at least 2 points to generate a valid trajectory."
+            print("You must provide at least 2 points to generate a valid trajectory.")
             res.trajectory.success = False
             return res
 
@@ -77,11 +77,11 @@ class ToppTrajectory():
         x.ReparameterizeTrajectory()
         t2 = time.time()
 
-        print "Using legacy:", uselegacy
-        print "Discretization step:", discrtimestep
-        print "Setup TOPP:", t1-t0
-        print "Run TOPP:", t2-t1
-        print "Total:", t2-t0
+        print("Using legacy:", uselegacy)
+        print("Discretization step:", discrtimestep)
+        print("Setup TOPP:", t1-t0)
+        print("Run TOPP:", t2-t1)
+        print("Total:", t2-t0)
 
         x.WriteProfilesList()
         x.WriteSwitchPointsList()

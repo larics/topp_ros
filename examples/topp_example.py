@@ -1,3 +1,4 @@
+from __future__ import print_function
 import string, time
 from pylab import *
 from numpy import *
@@ -36,11 +37,11 @@ ret = x.RunComputeProfiles(0,0)
 x.ReparameterizeTrajectory()
 t2 = time.time()
 
-print "Using legacy:", uselegacy
-print "Discretization step:", discrtimestep
-print "Setup TOPP:", t1-t0
-print "Run TOPP:", t2-t1
-print "Total:", t2-t0
+print("Using legacy:", uselegacy)
+print("Discretization step:", discrtimestep)
+print("Setup TOPP:", t1-t0)
+print("Run TOPP:", t2-t1)
+print("Total:", t2-t0)
 
 # Display results
 ion()
@@ -53,7 +54,7 @@ x.WriteResultTrajectory()
 traj1 = Trajectory.PiecewisePolynomialTrajectory.FromString(x.restrajectorystring)
 dtplot = 0.01
 TOPPpy.PlotKinematics(traj0,traj1,dtplot,vmax,amax)
-print "Trajectory duration before TOPP: ", traj0.duration
-print "Trajectory duration after TOPP: ", traj1.duration
-print "Number of chunks in final trajectory: ", len(traj1.chunkslist)
+print("Trajectory duration before TOPP: ", traj0.duration)
+print("Trajectory duration after TOPP: ", traj1.duration)
+print("Number of chunks in final trajectory: ", len(traj1.chunkslist))
 input()
