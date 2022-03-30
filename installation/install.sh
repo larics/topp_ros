@@ -20,6 +20,12 @@ if [ "$toppra_count" -ne "0" ]; then
   exit 0
 fi
 
+# Install numpy first
+distro=`lsb_release -r | awk '{ print $2 }'`
+if [ "$distro" = "18.04" ]; then
+  pip install numpy
+fi
+
 git clone https://github.com/hungpham2511/toppra
 cd toppra
 git checkout 8df858b08175d4884b803bf6ab7f459205e54fa2
