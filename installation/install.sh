@@ -28,8 +28,12 @@ git checkout 8df858b08175d4884b803bf6ab7f459205e54fa2
 distro=`lsb_release -r | awk '{ print $2 }'`
 if [ "$distro" = "18.04" ]; then
   # Install only required packages with Python2.7
-  pip install numpy cvxpy
+  echo "Toppra: Requirements for 18.04"
+  cd ..
+  pip install -r requirements2.7.txt --user
+  cd toppra
 else
+  echo "Toppra: Requirements for 20.04"
   pip install -r requirements.txt --user
 fi
 
