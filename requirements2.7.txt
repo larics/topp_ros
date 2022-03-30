@@ -1,2 +1,5 @@
 numpy
 cvxpy>=0.4.11, <1.0.0
+cython==0.22.0
+enum34
+coloredlogs

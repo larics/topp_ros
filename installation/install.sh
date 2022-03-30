@@ -29,14 +29,16 @@ distro=`lsb_release -r | awk '{ print $2 }'`
 if [ "$distro" = "18.04" ]; then
   # Install only required packages with Python2.7
   echo "Toppra: Requirements for 18.04"
-  pip install -r ../requirements2.7.txt --user
+  sudo apt install -y python-numpy
+  pip install -r $MY_PATH/../requirements2.7.txt --user
+  python setup.py develop --user --no-deps
 else
   echo "Toppra: Requirements for 20.04"
   pip install -r requirements.txt --user
+  python setup.py install --user 
 fi
 
-python setup.py install --user
 cd ..
-rm -rf toppra
+rm -rf $MY_PATH/toppra
 
 echo "Toppra installed"
