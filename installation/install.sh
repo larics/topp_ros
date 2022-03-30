@@ -29,7 +29,8 @@ distro=`lsb_release -r | awk '{ print $2 }'`
 if [ "$distro" = "18.04" ]; then
   # Install only required packages with Python2.7
   echo "Toppra: Requirements for 18.04"
-  sudo apt install -y python-numpy
+  sudo apt install -y python-numpy libblas-dev liblapack-dev libumfpack5 libsuitesparse-dev cython
+  pip install cython
   pip install -r $MY_PATH/../requirements2.7.txt --user
   python setup.py develop --user --no-deps
 else
