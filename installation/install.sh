@@ -55,7 +55,7 @@ if [ "$distro" = "18.04" ]; then
     cython
 
   # Use custom requirements file for toppra
-  pip2 install -r $MY_PATH/../toppra_requirements2.7.txt --user
+  pip2 install -r $MY_PATH/../toppra_requirements2.7.txt --user --no-deps
   
   echo "Python version: $(python --version)"
   # Explicitly use python2.7 during installation

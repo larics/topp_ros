@@ -1,5 +1,6 @@
 numpy
-cvxpy>=0.4.11, <1.0.0
+scs==1.1.3
+cvxpy==0.4.11
 cython==0.22.0
 enum34
 coloredlogs
