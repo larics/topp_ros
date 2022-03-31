@@ -14,27 +14,54 @@ MY_PATH=`dirname "$0"`
 MY_PATH=`( cd "$MY_PATH" && pwd )`
 cd "$MY_PATH"
 
+# Do the pip installation
+distro=`lsb_release -r | awk '{ print $2 }'`
+if [ "$distro" = "18.04" ]; then
+  sudo apt install -y python-pip
+else
+  sudo apt install -y python3-pip
+fi
+
+# Check if toppra i shere
 toppra_count=$(pip list | grep toppra | wc -l)
 if [ "$toppra_count" -ne "0" ]; then
   echo "Toppra already installed"
   exit 0
 fi
 
+# General dependencies
+sudo apt-get install -y \
+    libblas-dev \
+    liblapack-dev \
+    libumfpack5 \
+    libsuitesparse-dev
 
+# Get toppra
 git clone https://github.com/hungpham2511/toppra
 cd toppra
 git checkout 8df858b08175d4884b803bf6ab7f459205e54fa2
 
-distro=`lsb_release -r | awk '{ print $2 }'`
 if [ "$distro" = "18.04" ]; then
   # Install only required packages with Python2.7
   echo "Toppra: Requirements for 18.04"
-  sudo apt install -y python-numpy libblas-dev liblapack-dev libumfpack5 libsuitesparse-dev cython
-  pip install cython
-  pip install -r $MY_PATH/../requirements2.7.txt --user
-  python setup.py develop --user --no-deps
+  sudo apt install -y \
+    python \
+    python-pip \
+    python-numpy \
+    python-setuptools \
+    cython
+
+  # Use custom requirements file for toppra
+  pip2 install -r $MY_PATH/../toppra_requirements2.7.txt --user
+
+  # Explicitly use python2.7 during installation
+  python2.7 setup.py develop --user --no-deps
 else
   echo "Toppra: Requirements for 20.04"
+  sudo apt install -y \
+    python \
+    python3-pip \
+    python3-setuptools
   pip install -r requirements.txt --user
   python setup.py install --user 
 fi
