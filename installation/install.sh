@@ -15,15 +15,18 @@ MY_PATH=`( cd "$MY_PATH" && pwd )`
 cd "$MY_PATH"
 
 # Do the pip installation
+my_pip=pip2
 distro=`lsb_release -r | awk '{ print $2 }'`
 if [ "$distro" = "18.04" ]; then
   sudo apt install -y python-pip
+  my_pip=pip2
 else
   sudo apt install -y python3-pip
+  my_pip=pip3
 fi
 
 # Check if toppra i shere
-toppra_count=$(pip list | grep toppra | wc -l)
+toppra_count=$($my_pip list | grep toppra | wc -l)
 if [ "$toppra_count" -ne "0" ]; then
   echo "Toppra already installed"
   exit 0
