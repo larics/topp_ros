@@ -59,7 +59,7 @@ if [ "$distro" = "18.04" ]; then
   
   echo "Python version: $(python --version)"
   # Explicitly use python2.7 during installation
-  python2.7 setup.py develop --user --no-deps
+  pip2 install . --user --no-deps
 else
   echo "Toppra: Requirements for 20.04"
   sudo apt install -y \

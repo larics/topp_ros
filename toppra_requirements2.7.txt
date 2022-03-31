@@ -4,3 +4,4 @@ cvxpy==0.4.11
 cython==0.22.0
 enum34
 coloredlogs
+humanfriendly
