@@ -53,7 +53,8 @@ if [ "$distro" = "18.04" ]; then
 
   # Use custom requirements file for toppra
   pip2 install -r $MY_PATH/../toppra_requirements2.7.txt --user
-
+  
+  echo "Python version: $(python --version)"
   # Explicitly use python2.7 during installation
   python2.7 setup.py develop --user --no-deps
 else
@@ -62,8 +63,10 @@ else
     python \
     python3-pip \
     python3-setuptools
-  pip install -r requirements.txt --user
-  python setup.py install --user 
+  pip3 install -r requirements.txt --user
+  
+  echo "Python version: $(python --version)"
+  python3 setup.py install --user 
 fi
 
 cd ..
