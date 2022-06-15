@@ -52,6 +52,7 @@ if [ "$distro" = "18.04" ]; then
     python-pip \
     python-numpy \
     python-setuptools \
+    python-scipy \
     cython
 
   # Use custom requirements file for toppra
