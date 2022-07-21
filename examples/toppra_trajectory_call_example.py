@@ -1,25 +1,32 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 import copy, time
 
 # Ros imports
-import rospy
-from topp_ros.srv import GenerateTrajectory, GenerateTrajectoryRequest
+import rclpy
+from rclpy.node import Node
+from topp_ros.srv import GenerateTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint, \
     MultiDOFJointTrajectory, MultiDOFJointTrajectoryPoint
 from geometry_msgs.msg import Transform, Twist
 
-class RequestTrajectory():
+class RequestTrajectory(Node):
 
     def __init__(self):
-        # First set up service
-        request_trajectory_service = rospy.ServiceProxy(
-            "generate_toppra_trajectory", GenerateTrajectory)
+        '''
+        Initialization of the class.
+        '''
+        super().__init__("RequestTrajectory")
 
+        # First set up service
+        request_trajectory_service = self.create_client(GenerateTrajectory, 
+            "generate_toppra_trajectory")
+        while not  request_trajectory_service.wait_for_service(timeout_sec = 5.0):
+            self.get_logger().info('Service not available, waiting again...')
+        
         # This is an example for UAV and output trajectory is converted 
         # accordingly
-        trajectory_pub = rospy.Publisher('multi_dof_trajectory', 
-            MultiDOFJointTrajectory, queue_size=1)
+        trajectory_pub = self.create_publisher(MultiDOFJointTrajectory, 'multi_dof_trajectory', 1)
         time.sleep(0.5)
 
         # Example of a simple square trajectory for quadcopter. All vectors
@@ -36,19 +43,19 @@ class RequestTrajectory():
         yaw = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         # Create a service request which will be filled with waypoints
-        request = GenerateTrajectoryRequest()
+        request = GenerateTrajectory.Request()
 
         # Add waypoints in request
         waypoint = JointTrajectoryPoint()
         for i in range(0, len(x)):
             # Positions are defined above
-            waypoint.positions = [x[i], y[i], z[i], yaw[i]]
+            waypoint.positions = [float(x[i]), float(y[i]), float(z[i]), float(yaw[i])]
             # Also add constraints for velocity and acceleration. These
             # constraints are added only on the first waypoint since the
             # TOPP-RA reads them only from there.
             if i==0:
-                waypoint.velocities = [2, 2, 2, 1]
-                waypoint.accelerations = [1.25, 1.25, 1.25, 1]
+                waypoint.velocities = [2.0, 2.0, 2.0, 1.0]
+                waypoint.accelerations = [1.25, 1.25, 1.25, 1.0]
 
             # Append all waypoints in request
             request.waypoints.points.append(copy.deepcopy(waypoint))
@@ -65,10 +72,11 @@ class RequestTrajectory():
         # send True in this field. This is intended to be used only when you
         # have to debug something since it will block the service until plot
         # is closed.
-        request.plot = False
+        request.plot = True
         # Request the trajectory
-        response = request_trajectory_service(request)
-
+        future = request_trajectory_service.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        response = future.result()
         # Response will have trajectory and bool variable success. If for some
         # reason the trajectory was not able to be planned or the configuration
         # was incomplete or wrong it will return False.
@@ -108,7 +116,6 @@ class RequestTrajectory():
 
         return multi_dof_trajectory
 
-
-if __name__ == "__main__":
-    rospy.init_node("topp_trajectory_call_example")
-    RequestTrajectory()
+if __name__ == '__main__':
+    rclpy.init()    
+    trajectory = RequestTrajectory()

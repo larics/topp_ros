@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 import string, time, copy
 from pylab import *
@@ -9,26 +9,34 @@ from TOPP import Trajectory
 from TOPP import Utilities
 
 # Ros imports
-import rospy
-from topp_ros.srv import GenerateTrajectory, GenerateTrajectoryResponse
+import rclpy
+from rclpy.node import Node
+from rclpy.duration import Duration
+from topp_ros.srv import GenerateTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
-class ToppTrajectory():
+class ToppTrajectory(Node):
 
     def __init__(self):
         # setup topics and services
-        self.generate_topp_trajectory_service = rospy.Service('generate_topp_trajectory', 
-            GenerateTrajectory, self.generateToppTrajectoryCallback)
+        super().__init__("ToppTrajectory")
 
+        self.generate_toppra_trajectory_service = self.create_service(
+            GenerateTrajectory, 'generate_toppra_trajectory', self.generateToppTrajectoryCallback)
+        
         self.plot_flag = False
 
-    def run(self):
-        rospy.spin()
+         # Create a timer
+        timer_period = 0.1
+        self.timer = self.create_timer(timer_period, self.callback)
 
-    def generateToppTrajectoryCallback(self, req):
+    def callback(self):
+        # Nothing special, just waiting for service request
+        a = 5
+    
+    def generateToppTrajectoryCallback(self, req, res):
         print("Generating TOPP trajectory.")
-        res = GenerateTrajectoryResponse()
         dof = len(req.waypoints.points[0].positions)
         n = len(req.waypoints.points)
 
@@ -116,7 +124,7 @@ class ToppTrajectory():
                 temp_point.velocities.append(qdvect[i][j])
                 temp_point.accelerations.append(qddvect[i][j])
 
-            temp_point.time_from_start = rospy.Duration.from_sec(i/f)
+            temp_point.time_from_start = Duration(seconds=(i/f)).to_msg()
             joint_trajectory.points.append(temp_point)
 
         last_point = JointTrajectoryPoint()
@@ -125,12 +133,12 @@ class ToppTrajectory():
             last_point.velocities.append(qdvect[len(tvect)-1][j])
             last_point.accelerations.append(qddvect[len(tvect)-1][j])
         
-        last_point.time_from_start = rospy.Duration.from_sec((len(tvect)-1)/f)
+        last_point.time_from_start = Duration(seconds=(len(tvect)-1)/f).to_msg()
         joint_trajectory.points.append(last_point)
 
         return joint_trajectory
 
 if __name__=="__main__":
-    rospy.init_node("ToppTrajectoryGeneration")
-    generator = ToppTrajectory()
-    generator.run()
+    rclpy.init()    
+    topp_trajectory = ToppTrajectory()
+    rclpy.spin(topp_trajectory)

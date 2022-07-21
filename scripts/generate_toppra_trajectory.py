@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 
 # Toppra imports
@@ -11,35 +11,37 @@ import time
 import copy
 
 # Ros imports
-import rospy
-from topp_ros.srv import GenerateTrajectory, GenerateTrajectoryResponse
+import rclpy
+from rclpy.node import Node
+from rclpy.duration import Duration
+from topp_ros.srv import GenerateTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
-
-class ToppraTrajectory():
+class ToppraTrajectory(Node):
 
     def __init__(self):
         # Basically we have just one service waiting for request and outputting
         # trajectory
-        self.generate_toppra_trajectory_service = rospy.Service(
-            'generate_toppra_trajectory', GenerateTrajectory, 
-            self.generateToppraTrajectoryCallback)
+        super().__init__("ToppraTrajectory")
 
-        self.raw_trajectory_pub = rospy.Publisher('toppra_raw_trajectory', 
-            JointTrajectory, queue_size=1)
+        self.generate_toppra_trajectory_service = self.create_service(
+            GenerateTrajectory, 'generate_toppra_trajectory', self.generateToppraTrajectoryCallback)
 
-        self.raw_waypoints_pub = rospy.Publisher('toppra_raw_waypoints', 
-            JointTrajectory, queue_size=1)
+        self.raw_trajectory_pub = self.create_publisher(JointTrajectory, 'toppra_raw_trajectory', 1)
+        self.raw_waypoints_pub = self.create_publisher(JointTrajectory, 'toppra_raw_waypoints', 1)
+        
+        # Create a timer
+        timer_period = 0.1
+        self.timer = self.create_timer(timer_period, self.callback)
 
-    def run(self):
+    def callback(self):
         # Nothing special, just waiting for service request
-        rospy.spin()
+        a = 5
 
-    def generateToppraTrajectoryCallback(self, req):
+    def generateToppraTrajectoryCallback(self, req, res):
         print(" ")
         print("Generating TOPP-RA trajectory.")
         tstart = time.time()
-        res = GenerateTrajectoryResponse()
         dof = len(req.waypoints.points[0].positions)
         n = len(req.waypoints.points)
 
@@ -80,10 +82,10 @@ class ToppraTrajectory():
         else:
             gridpoints = np.linspace(0, path.duration, req.n_gridpoints)
         instance = algo.TOPPRA([pc_vel, pc_acc], path, gridpoints=gridpoints, solver_wrapper='seidel')
-
+        print ("instance:", instance.compute_trajectory(0, 0))
         # Retime the trajectory, only this step is necessary.
         t0 = time.time()
-        jnt_traj, aux_traj = instance.compute_trajectory(0, 0)
+        jnt_traj = instance.compute_trajectory(0, 0)
         #print("Parameterization time: {:} secs".format(time.time() - t0))
 
         # Plot for debugging
@@ -157,7 +159,7 @@ class ToppraTrajectory():
                 temp_point.velocities.append(qds_sample[i,j])
                 temp_point.accelerations.append(qdds_sample[i,j])
 
-            temp_point.time_from_start = rospy.Duration.from_sec(i/f)
+            temp_point.time_from_start = Duration(seconds=(i/f)).to_msg()
             joint_trajectory.points.append(temp_point)
 
         # Add last point with zero velocity and acceleration
@@ -166,7 +168,7 @@ class ToppraTrajectory():
             last_point.positions.append(qs_sample[n-1,i])
             last_point.velocities.append(0.0)
             last_point.accelerations.append(0.0)
-        last_point.time_from_start = rospy.Duration.from_sec((n)/f)
+        last_point.time_from_start = Duration(seconds=(n/f)).to_msg()
         joint_trajectory.points.append(last_point)
 
         for i in range(0, dof):
@@ -174,7 +176,7 @@ class ToppraTrajectory():
 
         return joint_trajectory
 
-if __name__ == "__main__":
-    rospy.init_node("generate_toppra_trajectory")
-    generator = ToppraTrajectory()
-    generator.run()
+if __name__ == '__main__':
+    rclpy.init()    
+    toppra_trajectory = ToppraTrajectory()
+    rclpy.spin(toppra_trajectory)
