@@ -30,14 +30,6 @@ class ToppraTrajectory(Node):
         self.raw_trajectory_pub = self.create_publisher(JointTrajectory, 'toppra_raw_trajectory', 1)
         self.raw_waypoints_pub = self.create_publisher(JointTrajectory, 'toppra_raw_waypoints', 1)
         
-        # Create a timer
-        timer_period = 0.1
-        self.timer = self.create_timer(timer_period, self.callback)
-
-    def callback(self):
-        # Nothing special, just waiting for service request
-        a = 5
-
     def generateToppraTrajectoryCallback(self, req, res):
         print(" ")
         print("Generating TOPP-RA trajectory.")

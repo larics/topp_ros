@@ -72,7 +72,7 @@ class RequestTrajectory(Node):
         # send True in this field. This is intended to be used only when you
         # have to debug something since it will block the service until plot
         # is closed.
-        request.plot = True
+        request.plot = False
         # Request the trajectory
         future = request_trajectory_service.call_async(request)
         rclpy.spin_until_future_complete(self, future)
