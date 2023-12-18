@@ -26,3 +26,15 @@ catkin_package(
   CATKIN_DEPENDS std_msgs trajectory_msgs geometry_msgs
 )
 
+# Mark launch folder for installation
+install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+# Mark scripts folder for installation
+install(DIRECTORY scripts
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+  )
+
+# Mark all the *.xml files for installation
+install(FILES package.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
